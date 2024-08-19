@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "Node16",
+    "moduleResolution": "node16",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "rootDir": ".",
+    "baseUrl": ".",
+    "types": ["mocha"],
+    "paths": {
+      "@typescript-eslint/rule-tester": ["node_modules/@typescript-eslint/rule-tester/dist/index.d.ts"],
+    }
+  },
+  "include": ["lib/**/*.ts", "tests/**/*.ts", "node_modules/@typescript-eslint/rule-tester/**/*.ts"],
+  "exclude": ["node_modules"]
+}

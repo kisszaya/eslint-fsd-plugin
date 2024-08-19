@@ -1,0 +1,53 @@
+{
+  "name": "eslint-plugin-kisszaya-fsd-plugin",
+  "version": "0.0.2",
+  "description": "Plugin to format code by fsd principles",
+  "keywords": [
+    "eslint",
+    "eslintplugin",
+    "eslint-plugin"
+  ],
+  "author": "Sveta",
+  "main": "./lib/index.js",
+  "moduleResolution": "node",
+  "exports": "./lib/index.js",
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "lint": "npm-run-all \"lint:*\"",
+    "lint:eslint-docs": "npm-run-all \"update:eslint-docs -- --check\"",
+    "lint:eslint-docs-generate": "eslint-doc-generator --init-rule-docs\n",
+    "lint:js": "eslint .",
+    "test": "mocha tests/**/*.ts",
+    "update:eslint-docs": "eslint-doc-generator"
+  },
+  "dependencies": {
+    "requireindex": "1.2.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.9.0",
+    "@types/eslint": "9.6.0",
+    "@types/mocha": "10.0.7",
+    "@typescript-eslint/rule-tester": "8.1.0",
+    "@typescript-eslint/types": "8.1.0",
+    "@typescript-eslint/utils": "8.1.0",
+    "eslint": "9.0.0",
+    "eslint-doc-generator": "1.7.1",
+    "eslint-plugin-eslint-plugin": "6.2.0",
+    "eslint-plugin-n": "17.10.2",
+    "mocha": "10.7.3",
+    "npm-run-all2": "6.2.2",
+    "ts-node": "10.9.2",
+    "typescript": "5.5.4",
+    "typescript-eslint": "8.1.0"
+  },
+  "engines": {
+    "node": "^18.18.0 || ^20.9.0 || >=21.1.0"
+  },
+  "peerDependencies": {
+    "eslint": ">=8.57.0"
+  },
+  "license": "MIT"
+}
