@@ -9,11 +9,17 @@
     "forceConsistentCasingInFileNames": true,
     "rootDir": ".",
     "baseUrl": ".",
-    "types": ["mocha"],
+    "types": ["mocha", "node"],
     "paths": {
-      "@typescript-eslint/rule-tester": ["node_modules/@typescript-eslint/rule-tester/dist/index.d.ts"],
-    }
+      "@typescript-eslint/rule-tester": [
+        "node_modules/@typescript-eslint/rule-tester/dist/index.d.ts",
+      ],
+    },
   },
-  "include": ["lib/**/*.ts", "tests/**/*.ts", "node_modules/@typescript-eslint/rule-tester/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "lib/**/*.ts",
+    "tests/**/*.ts",
+    "node_modules/@typescript-eslint/rule-tester/**/*.ts",
+  ],
+  "exclude": ["node_modules"],
 }
