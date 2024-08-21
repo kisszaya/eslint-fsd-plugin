@@ -22,3 +22,5 @@ export const RULES: any = {
     viewer: 1,
   },
 };
+
+export const LAYER_SET = new Set(Object.keys(RULES));

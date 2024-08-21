@@ -1,5 +1,5 @@
 import { ESLintUtils } from "@typescript-eslint/utils";
-import { RULES } from "./const";
+import { LAYER_SET, RULES } from "./const";
 import path from "path";
 
 export enum MessageIds {
@@ -34,7 +34,11 @@ export const fsdRelativePath = createRule<unknown[], MessageIds>({
         const checker = new RelativePathChecker();
 
         const isRelativePath = checker.isRelative(importPath);
-        const isAbsolutePath = !isRelativePath;
+        const isAbsolutePath = checker.isAbsolute(importPath);
+
+        if (!isRelativePath && !isAbsolutePath) {
+          return;
+        }
 
         if (
           isRelativePath &&
@@ -76,6 +80,14 @@ class RelativePathChecker {
       importPath.startsWith("./") ||
       importPath.startsWith("../")
     );
+  }
+
+  isAbsolute(importPath: string) {
+    if (!importPath.startsWith(ABSOLUTE_ALIAS)) {
+      return false;
+    }
+    const layer = importPath.slice(2).split("/")[0];
+    return LAYER_SET.has(layer);
   }
 
   shouldBeAbsolute({ filename, importPath }: Params): boolean {

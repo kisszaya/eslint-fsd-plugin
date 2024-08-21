@@ -20,6 +20,10 @@ function windowsPath(...path: string[]) {
 ruleTester.run("fsd-relative-path", fsdRelativePath, {
   valid: [
     {
+      code: "import Test from 'effector'",
+      filename: windowsPath("app", "index.ts"),
+    },
+    {
       code: "import Test from './styles/index.ts'",
       filename: windowsPath("app", "index.ts"),
     },

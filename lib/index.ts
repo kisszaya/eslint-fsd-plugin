@@ -9,10 +9,6 @@ interface Plugin extends Omit<ESLint.Plugin, "rules"> {
 }
 
 const plugin: Plugin = {
-  meta: {
-    name: "eslint-plugin-kisszaya-fsd-plugin",
-    version: "0.0.3",
-  },
   rules,
 };
 
