@@ -10,72 +10,96 @@ RuleTester.afterAll = () => {};
 
 const ruleTester = new RuleTester();
 
-const FILENAMES = {
-  APP_WINDOWS: "C:\\projects\\src\\app\\index.ts",
-  APP_UNIX: "home/projects/src/app/index.ts",
-  ENTITIES_WINDOWS: "C:\\projects\\src\\entities\\entity-name\\index.ts",
-  ENTITIES_UNIX: "home/projects/src/entities/entity-name/index.ts",
-  FEATURES_WINDOWS: "C:\\projects\\src\\features\\feature-name\\index.ts",
-  FEATURES_UNIX: "home/projects/src/features/feature-name/index.ts",
-};
+function unixPath(...path: string[]) {
+  return `home/projects/src/${path.join("/")}`;
+}
+function windowsPath(...path: string[]) {
+  return `C:\\projects\\src\\${path.join("\\")}`;
+}
 
 ruleTester.run("fsd-relative-path", fsdRelativePath, {
   valid: [
     {
       code: "import Test from './styles/index.ts'",
-      filename: FILENAMES.APP_WINDOWS,
+      filename: windowsPath("app", "index.ts"),
     },
     {
       code: `import Test from '${ABSOLUTE_ALIAS}entities/entity-name/index.ts'`,
-      filename: FILENAMES.APP_UNIX,
+      filename: unixPath("app", "index.ts"),
     },
     {
       code: "import Test from './styles/index.ts'",
-      filename: FILENAMES.ENTITIES_WINDOWS,
+      filename: windowsPath("entities", "entity-name", "index.ts"),
     },
     {
       code: `import Test from '${ABSOLUTE_ALIAS}shared/ui/button.ts'`,
-      filename: FILENAMES.ENTITIES_UNIX,
+      filename: unixPath("entities", "entity-name", "index.ts"),
     },
     {
       code: "import Test from './styles/index.ts'",
-      filename: FILENAMES.FEATURES_WINDOWS,
+      filename: windowsPath("features", "feature-name", "index.ts"),
     },
     {
       code: `import Test from '${ABSOLUTE_ALIAS}shared/ui/button.ts'`,
-      filename: FILENAMES.FEATURES_UNIX,
+      filename: unixPath("features", "feature-name", "index.ts"),
+    },
+    {
+      code: `import Test from '../lib/button.ts'`,
+      filename: windowsPath(
+        "shared",
+        "ui",
+        "molecules",
+        "ui",
+        "meow",
+        "page.ts",
+      ),
     },
   ],
   invalid: [
     {
-      code: "import Test from '../entities/entity-name'",
-      filename: FILENAMES.APP_WINDOWS,
+      code: "import Test from '../entities/entity-name/index.ts'",
+      filename: windowsPath("app", "index.ts"),
+      errors: [{ messageId: MessageIds.ISSUE_SHOULD_BE_ABSOLUTE }],
+    },
+    {
+      code: "import Test from '../entities/entity-name/index.ts'",
+      filename: unixPath("app", "index.ts"),
       errors: [{ messageId: MessageIds.ISSUE_SHOULD_BE_ABSOLUTE }],
     },
     {
       code: `import Test from '${ABSOLUTE_ALIAS}app/styles/index.ts'`,
-      filename: FILENAMES.APP_UNIX,
+      filename: unixPath("app", "index.ts"),
       errors: [{ messageId: MessageIds.ISSUE_SHOULD_BE_RELATIVE }],
     },
     {
       code: "import Test from '../../shared/ui/button.ts'",
-      filename: FILENAMES.ENTITIES_WINDOWS,
+      filename: windowsPath("entities", "entity-name", "index.ts"),
       errors: [{ messageId: MessageIds.ISSUE_SHOULD_BE_ABSOLUTE }],
     },
     {
       code: `import Test from '${ABSOLUTE_ALIAS}entities/entity-name/ui/index.ts'`,
-      filename: FILENAMES.ENTITIES_UNIX,
+      filename: unixPath("entities", "entity-name", "index.ts"),
       errors: [{ messageId: MessageIds.ISSUE_SHOULD_BE_RELATIVE }],
     },
     {
       code: "import Test from '../../shared/ui/button.ts'",
-      filename: FILENAMES.FEATURES_WINDOWS,
+      filename: windowsPath("features", "feature-name", "index.ts"),
       errors: [{ messageId: MessageIds.ISSUE_SHOULD_BE_ABSOLUTE }],
     },
     {
       code: `import Test from '${ABSOLUTE_ALIAS}features/feature-name/ui/index.ts'`,
-      filename: FILENAMES.FEATURES_UNIX,
+      filename: unixPath("features", "feature-name", "index.ts"),
       errors: [{ messageId: MessageIds.ISSUE_SHOULD_BE_RELATIVE }],
+    },
+    {
+      code: `import Test from '${ABSOLUTE_ALIAS}shared/ui/molecules/ui/index.ts'`,
+      filename: windowsPath("shared", "ui", "molecules", "page.tsx"),
+      errors: [{ messageId: MessageIds.ISSUE_SHOULD_BE_RELATIVE }],
+    },
+    {
+      code: `import Test from '../atoms/ui/index.ts'`,
+      filename: windowsPath("shared", "ui", "molecules", "page.tsx"),
+      errors: [{ messageId: MessageIds.ISSUE_SHOULD_BE_ABSOLUTE }],
     },
   ],
 });
