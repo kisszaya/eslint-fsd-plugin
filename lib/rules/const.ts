@@ -6,6 +6,9 @@ export const RULES: any = {
   layouts: {
     "**": 1,
   },
+  widgets: {
+    "**": 1,
+  },
   features: {
     "**": 1,
   },
@@ -13,6 +16,13 @@ export const RULES: any = {
     "**": 1,
   },
   shared: {
+    api: 1,
+    assets: 1,
+    config: 1,
+    consts: 1,
+    init: 1,
+    routing: 1,
+    types: 1,
     ui: {
       "**": 1,
     },

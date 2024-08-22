@@ -132,9 +132,12 @@ class RelativePathChecker {
   }): boolean {
     let isTheSamePattern = true;
 
-    pattern.forEach((patternPart, index) => {
-      isTheSamePattern = filenameElems[index] === importPathElems[index];
-    });
+    for (let i = 0; i < pattern.length; i++) {
+      isTheSamePattern = filenameElems[i] === importPathElems[i];
+      if (!isTheSamePattern) {
+        break;
+      }
+    }
 
     return isTheSamePattern;
   }

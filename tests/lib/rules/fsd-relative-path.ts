@@ -58,6 +58,14 @@ ruleTester.run("fsd-relative-path", fsdRelativePath, {
         "page.ts",
       ),
     },
+    {
+      code: `import Test from '${ABSOLUTE_ALIAS}features/material-playback'`,
+      filename: unixPath("pages", "material-playback", "model.ts"),
+    },
+    {
+      code: `import Test from '${ABSOLUTE_ALIAS}shared/init'`,
+      filename: unixPath("shared", "routing", "router.ts"),
+    },
   ],
   invalid: [
     {
