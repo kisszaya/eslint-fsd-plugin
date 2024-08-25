@@ -1,17 +1,22 @@
 import { ESLintUtils } from "@typescript-eslint/utils";
-import { LAYER_SET, RULES } from "./const";
+import { LAYER_SET, RULES, SCHEMA } from "./const";
 import path from "path";
+import { getFilenamePattern, isAbsolute } from "./helpers";
 
 export enum MessageIds {
   ISSUE_SHOULD_BE_RELATIVE = "issue:relative",
   ISSUE_SHOULD_BE_ABSOLUTE = "issue:absolute",
 }
 
+interface Options {
+  alias?: string;
+}
+
 const createRule = ESLintUtils.RuleCreator(
   (name) => `https://example.com/rule/${name}`,
 );
 
-export const fsdRelativePath = createRule<unknown[], MessageIds>({
+export const fsdRelativePath = createRule<Options[], MessageIds>({
   name: "fsd-relative-path",
   meta: {
     docs: {
@@ -22,19 +27,21 @@ export const fsdRelativePath = createRule<unknown[], MessageIds>({
       [MessageIds.ISSUE_SHOULD_BE_RELATIVE]: "Import should be relative",
       [MessageIds.ISSUE_SHOULD_BE_ABSOLUTE]: "Import should be absolute",
     },
-    schema: [],
+    schema: SCHEMA,
   },
   defaultOptions: [],
   create: (context) => {
+    const alias = context.options[0].alias || "";
+
     return {
       ImportDeclaration(node) {
         const filename = context.physicalFilename;
         const importPath = node.source.value;
 
-        const checker = new RelativePathChecker();
+        const checker = new RelativePathChecker(alias);
 
         const isRelativePath = checker.isRelative(importPath);
-        const isAbsolutePath = checker.isAbsolute(importPath);
+        const isAbsolutePath = isAbsolute({ importPath, alias });
 
         if (!isRelativePath && !isAbsolutePath) {
           return;
@@ -64,7 +71,7 @@ export const fsdRelativePath = createRule<unknown[], MessageIds>({
   },
 });
 
-export const ABSOLUTE_ALIAS = "@/";
+// export const ABSOLUTE_ALIAS = "@/";
 export const ALIAS_START_PATH = "src/";
 
 type Params = {
@@ -73,6 +80,12 @@ type Params = {
 };
 
 class RelativePathChecker {
+  private readonly alias: string;
+
+  constructor(alias: string) {
+    this.alias = alias;
+  }
+
   isRelative(importPath: string) {
     return (
       importPath === "." ||
@@ -80,14 +93,6 @@ class RelativePathChecker {
       importPath.startsWith("./") ||
       importPath.startsWith("../")
     );
-  }
-
-  isAbsolute(importPath: string) {
-    if (!importPath.startsWith(ABSOLUTE_ALIAS)) {
-      return false;
-    }
-    const layer = importPath.slice(2).split("/")[0];
-    return LAYER_SET.has(layer);
   }
 
   shouldBeAbsolute({ filename, importPath }: Params): boolean {
@@ -100,7 +105,7 @@ class RelativePathChecker {
       filename,
     });
     const filenameElems = this.getFilenameElems(filename);
-    const pattern = this.getPattern(filenameElems);
+    const pattern = getFilenamePattern(filenameElems);
     const isTheSamePattern = this.checkPattern({
       pattern,
       importPathElems,
@@ -112,7 +117,7 @@ class RelativePathChecker {
   shouldBeRelative({ filename, importPath }: Params): boolean {
     const importPathElems = this.getAbsoluteImportPathElems(importPath);
     const filenameElems = this.getFilenameElems(filename);
-    const pattern = this.getPattern(filenameElems);
+    const pattern = getFilenamePattern(filenameElems);
     const isTheSamePattern = this.checkPattern({
       pattern,
       importPathElems,
@@ -142,33 +147,8 @@ class RelativePathChecker {
     return isTheSamePattern;
   }
 
-  private getPattern(filenameElems: string[]): string[] {
-    const pattern: string[] = [];
-    let rules = RULES;
-    for (let elem of filenameElems) {
-      if (rules[elem]) {
-        pattern.push(elem);
-
-        if (rules[elem] === 1) {
-          break;
-        } else {
-          rules = rules[elem];
-        }
-      } else if (Boolean(rules["**"])) {
-        pattern.push("**");
-
-        if (rules?.["**"] === 1) {
-          break;
-        } else {
-          rules = rules[elem];
-        }
-      }
-    }
-    return pattern;
-  }
-
   private getAbsoluteImportPathElems(importPath: string) {
-    const importPathWithoutAlias = importPath.slice(ABSOLUTE_ALIAS.length);
+    const importPathWithoutAlias = importPath.slice(this.alias.length);
     return importPathWithoutAlias.split("/");
   }
 

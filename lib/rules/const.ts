@@ -1,3 +1,5 @@
+import { RuleMetaData } from "@typescript-eslint/utils/ts-eslint";
+
 export const RULES: any = {
   app: 1,
   pages: {
@@ -32,5 +34,16 @@ export const RULES: any = {
     viewer: 1,
   },
 };
+
+export const SCHEMA: RuleMetaData<"", unknown>["schema"] = [
+  {
+    type: "object",
+    properties: {
+      alias: {
+        type: "string",
+      },
+    },
+  },
+];
 
 export const LAYER_SET = new Set(Object.keys(RULES));
