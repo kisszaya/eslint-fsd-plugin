@@ -9,6 +9,7 @@ lerna-debug.log*
 
 /lib/**/*.js
 /tests/**/*.js
+/types/index.js
 node_modules
 dist
 dist-ssr

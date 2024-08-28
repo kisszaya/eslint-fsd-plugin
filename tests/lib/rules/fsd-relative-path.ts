@@ -5,17 +5,11 @@ import {
   MessageIds,
 } from "../../../lib/rules/fsd-relative-path";
 import { unixPath, windowsPath } from "./helpers";
+import { BASE_ALIAS, BASE_OPTIONS } from "./const";
 
 RuleTester.afterAll = () => {};
 
 const ruleTester = new RuleTester();
-
-const BASE_OPTIONS = [
-  {
-    alias: "@/",
-  },
-];
-const BASE_ALIAS = BASE_OPTIONS[0].alias;
 
 ruleTester.run("fsd-relative-path", fsdRelativePath, {
   valid: [

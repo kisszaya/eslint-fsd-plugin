@@ -1,22 +1,25 @@
 import { ESLintUtils } from "@typescript-eslint/utils";
-import { LAYER_SET, RULES, SCHEMA } from "./const";
+import { ALIAS_START_PATH, SCHEMA, SchemaOptions } from "./schema";
 import path from "path";
-import { getFilenamePattern, isAbsolute } from "./helpers";
+import {
+  getAbsoluteImportPathElems,
+  getFilenameElems,
+  getFilenamePattern,
+  isAbsolute,
+  normalizePath,
+} from "./helpers";
+import { ProjectStructureSchema } from "../../types";
 
 export enum MessageIds {
   ISSUE_SHOULD_BE_RELATIVE = "issue:relative",
   ISSUE_SHOULD_BE_ABSOLUTE = "issue:absolute",
 }
 
-interface Options {
-  alias?: string;
-}
-
 const createRule = ESLintUtils.RuleCreator(
   (name) => `https://example.com/rule/${name}`,
 );
 
-export const fsdRelativePath = createRule<Options[], MessageIds>({
+export const fsdRelativePath = createRule<SchemaOptions[], MessageIds>({
   name: "fsd-relative-path",
   meta: {
     docs: {
@@ -32,16 +35,21 @@ export const fsdRelativePath = createRule<Options[], MessageIds>({
   defaultOptions: [],
   create: (context) => {
     const alias = context.options[0].alias || "";
+    const projectStructure = context.options[0].projectStructure;
 
     return {
       ImportDeclaration(node) {
         const filename = context.physicalFilename;
         const importPath = node.source.value;
 
-        const checker = new RelativePathChecker(alias);
+        const checker = new RelativePathChecker(alias, projectStructure);
 
         const isRelativePath = checker.isRelative(importPath);
-        const isAbsolutePath = isAbsolute({ importPath, alias });
+        const isAbsolutePath = isAbsolute({
+          importPath,
+          alias,
+          projectStructure,
+        });
 
         if (!isRelativePath && !isAbsolutePath) {
           return;
@@ -71,9 +79,6 @@ export const fsdRelativePath = createRule<Options[], MessageIds>({
   },
 });
 
-// export const ABSOLUTE_ALIAS = "@/";
-export const ALIAS_START_PATH = "src/";
-
 type Params = {
   filename: string;
   importPath: string;
@@ -81,9 +86,11 @@ type Params = {
 
 class RelativePathChecker {
   private readonly alias: string;
+  private readonly projectStructure: ProjectStructureSchema;
 
-  constructor(alias: string) {
+  constructor(alias: string, projectStructure: ProjectStructureSchema) {
     this.alias = alias;
+    this.projectStructure = projectStructure;
   }
 
   isRelative(importPath: string) {
@@ -104,8 +111,11 @@ class RelativePathChecker {
       importPath,
       filename,
     });
-    const filenameElems = this.getFilenameElems(filename);
-    const pattern = getFilenamePattern(filenameElems);
+    const filenameElems = getFilenameElems({ filename });
+    const pattern = getFilenamePattern({
+      filenameElems,
+      projectStructure: this.projectStructure,
+    });
     const isTheSamePattern = this.checkPattern({
       pattern,
       importPathElems,
@@ -115,9 +125,15 @@ class RelativePathChecker {
   }
 
   shouldBeRelative({ filename, importPath }: Params): boolean {
-    const importPathElems = this.getAbsoluteImportPathElems(importPath);
-    const filenameElems = this.getFilenameElems(filename);
-    const pattern = getFilenamePattern(filenameElems);
+    const importPathElems = getAbsoluteImportPathElems({
+      importPath,
+      alias: this.alias,
+    });
+    const filenameElems = getFilenameElems({ filename });
+    const pattern = getFilenamePattern({
+      filenameElems,
+      projectStructure: this.projectStructure,
+    });
     const isTheSamePattern = this.checkPattern({
       pattern,
       importPathElems,
@@ -147,11 +163,6 @@ class RelativePathChecker {
     return isTheSamePattern;
   }
 
-  private getAbsoluteImportPathElems(importPath: string) {
-    const importPathWithoutAlias = importPath.slice(this.alias.length);
-    return importPathWithoutAlias.split("/");
-  }
-
   private getRelativeImportPathElems({
     filename,
     importPath,
@@ -160,23 +171,13 @@ class RelativePathChecker {
     filename: string;
   }) {
     const normalizedImportPath = filename.includes("\\")
-      ? this.normalizePath(
+      ? normalizePath(
           path.win32.resolve(path.win32.dirname(filename), importPath),
         )
-      : this.normalizePath(
+      : normalizePath(
           path.win32.resolve(path.win32.dirname(filename), importPath),
         );
 
     return normalizedImportPath.split(ALIAS_START_PATH)[1].split("/");
-  }
-
-  private getFilenameElems(filename: string) {
-    const normalizedFilename = this.normalizePath(filename);
-    return normalizedFilename.split(ALIAS_START_PATH)[1].split("/");
-  }
-
-  private normalizePath(filename: string) {
-    const normalized = path.normalize(filename).replace(/\\/g, "/");
-    return normalized.split(path.sep).join(path.posix.sep);
   }
 }

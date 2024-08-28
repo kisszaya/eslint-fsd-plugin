@@ -1,6 +1,6 @@
-import { RuleMetaData } from "@typescript-eslint/utils/ts-eslint";
+import { ProjectStructureSchema } from "../../../types";
 
-export const RULES: any = {
+export const PROJECT_STRUCTURE: ProjectStructureSchema = {
   app: 1,
   pages: {
     "**": 1,
@@ -19,7 +19,10 @@ export const RULES: any = {
   },
   shared: {
     api: 1,
-    assets: 1,
+    assets: {
+      images: 1,
+      icons: 1,
+    },
     config: 1,
     consts: 1,
     init: 1,
@@ -35,15 +38,10 @@ export const RULES: any = {
   },
 };
 
-export const SCHEMA: RuleMetaData<"", unknown>["schema"] = [
+export const BASE_OPTIONS = [
   {
-    type: "object",
-    properties: {
-      alias: {
-        type: "string",
-      },
-    },
+    alias: "@/",
+    projectStructure: PROJECT_STRUCTURE,
   },
 ];
-
-export const LAYER_SET = new Set(Object.keys(RULES));
+export const BASE_ALIAS = BASE_OPTIONS[0].alias;

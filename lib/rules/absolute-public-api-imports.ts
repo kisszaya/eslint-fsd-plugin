@@ -1,20 +1,24 @@
 import { ESLintUtils } from "@typescript-eslint/utils";
-import { RULES, SCHEMA } from "./const";
-import { getFilenamePattern, isAbsolute } from "./helpers";
+import { SCHEMA, SchemaOptions } from "./schema";
+import {
+  getAbsoluteImportPathElems,
+  getFilenamePattern,
+  isAbsolute,
+} from "./helpers";
+import { ProjectStructureSchema } from "../../types";
 
 export enum MessageIds {
   ISSUE_ABSOLUTE_IMPORT_SHOULD_BE_FROM_PUBLIC_API = "issue:public-api",
-}
-
-interface Options {
-  alias?: string;
 }
 
 const createRule = ESLintUtils.RuleCreator(
   (name) => `https://example.com/rule/${name}`,
 );
 
-export const fsdAbsolutePublicApiImports = createRule<Options[], MessageIds>({
+export const fsdAbsolutePublicApiImports = createRule<
+  SchemaOptions[],
+  MessageIds
+>({
   name: "absolute-public-api-imports",
   meta: {
     docs: {
@@ -31,14 +35,19 @@ export const fsdAbsolutePublicApiImports = createRule<Options[], MessageIds>({
   defaultOptions: [],
   create: (context) => {
     const alias = context.options[0].alias || "";
+    const projectStructure = context.options[0].projectStructure;
 
     return {
       ImportDeclaration(node) {
         const importPath = node.source.value;
 
-        const checker = new PublicApiImportsChecker(alias);
+        const checker = new PublicApiImportsChecker(alias, projectStructure);
 
-        const isAbsolutePath = isAbsolute({ importPath, alias });
+        const isAbsolutePath = isAbsolute({
+          importPath,
+          alias,
+          projectStructure,
+        });
 
         if (!isAbsolutePath) {
           return;
@@ -58,22 +67,25 @@ export const fsdAbsolutePublicApiImports = createRule<Options[], MessageIds>({
 
 class PublicApiImportsChecker {
   private readonly alias: string;
+  private readonly projectStructure: ProjectStructureSchema;
 
-  constructor(alias: string) {
+  constructor(alias: string, projectStructure: ProjectStructureSchema) {
     this.alias = alias;
+    this.projectStructure = projectStructure;
   }
 
   isPublicApiImportsViolated({ importPath }: { importPath: string }) {
-    const importPathElems = this.getAbsoluteImportPathElems(importPath);
-    const pattern = getFilenamePattern(importPathElems);
+    const importPathElems = getAbsoluteImportPathElems({
+      importPath,
+      alias: this.alias,
+    });
+    const pattern = getFilenamePattern({
+      filenameElems: importPathElems,
+      projectStructure: this.projectStructure,
+    });
     if (importPathElems.length > pattern.length) {
       return true;
     }
     return false;
-  }
-
-  private getAbsoluteImportPathElems(importPath: string) {
-    const importPathWithoutAlias = importPath.slice(this.alias.length);
-    return importPathWithoutAlias.split("/");
   }
 }
