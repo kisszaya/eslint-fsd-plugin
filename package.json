@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-kisszaya-fsd-plugin",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "Plugin to format code by fsd principles",
   "keywords": [
     "eslint",

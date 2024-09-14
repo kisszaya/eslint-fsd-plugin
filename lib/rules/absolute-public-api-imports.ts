@@ -1,10 +1,6 @@
 import { ESLintUtils } from "@typescript-eslint/utils";
 import { SCHEMA, SchemaOptions } from "./schema";
-import {
-  getAbsoluteImportPathElems,
-  getFilenamePattern,
-  isAbsolute,
-} from "./helpers";
+import { getAbsoluteImportPathElems, getPattern, isAbsolute } from "./helpers";
 import { ProjectStructureSchema } from "../../types";
 
 export enum MessageIds {
@@ -21,6 +17,7 @@ export const fsdAbsolutePublicApiImports = createRule<
 >({
   name: "absolute-public-api-imports",
   meta: {
+    fixable: "code",
     docs: {
       description:
         "Absolute imports should be only from public api, not inside module",
@@ -53,11 +50,19 @@ export const fsdAbsolutePublicApiImports = createRule<
           return;
         }
 
-        if (checker.isPublicApiImportsViolated({ importPath })) {
+        const { isViolated, requiredPath } =
+          checker.checkPublicApiImportsViolated({
+            importPath,
+          });
+
+        if (isViolated) {
           return context.report({
             node,
             messageId:
               MessageIds.ISSUE_ABSOLUTE_IMPORT_SHOULD_BE_FROM_PUBLIC_API,
+            fix: (fixer) => {
+              return fixer.replaceText(node.source, requiredPath ?? "");
+            },
           });
         }
       },
@@ -74,18 +79,36 @@ class PublicApiImportsChecker {
     this.projectStructure = projectStructure;
   }
 
-  isPublicApiImportsViolated({ importPath }: { importPath: string }) {
+  checkPublicApiImportsViolated({ importPath }: { importPath: string }): {
+    isViolated: boolean;
+    requiredPath?: string;
+  } {
     const importPathElems = getAbsoluteImportPathElems({
       importPath,
       alias: this.alias,
     });
-    const pattern = getFilenamePattern({
-      filenameElems: importPathElems,
+    const pattern = getPattern({
+      elems: importPathElems,
       projectStructure: this.projectStructure,
     });
     if (importPathElems.length > pattern.length) {
-      return true;
+      return {
+        isViolated: true,
+        requiredPath: this.getRequiredPath({ pattern, importPathElems }),
+      };
     }
-    return false;
+    return {
+      isViolated: false,
+    };
+  }
+
+  getRequiredPath({
+    importPathElems,
+    pattern,
+  }: {
+    pattern: string[];
+    importPathElems: string[];
+  }) {
+    return `'${this.alias + importPathElems.slice(0, pattern.length).join("/")}'`;
   }
 }

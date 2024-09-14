@@ -22,6 +22,7 @@ ruleTester.run("absolute-public-api-imports", fsdAbsolutePublicApiImports, {
   invalid: [
     {
       code: `import Test from '${BASE_ALIAS}shared/ui/molecules/index.ts'`,
+      output: `import Test from '${BASE_ALIAS}shared/ui/molecules'`,
       filename: windowsPath("app", "index.ts"),
       errors: [
         {
@@ -32,6 +33,7 @@ ruleTester.run("absolute-public-api-imports", fsdAbsolutePublicApiImports, {
     },
     {
       code: `import Test from '${BASE_ALIAS}shared/ui/molecules/modal/index.ts'`,
+      output: `import Test from '${BASE_ALIAS}shared/ui/molecules'`,
       filename: windowsPath("app", "index.ts"),
       errors: [
         {

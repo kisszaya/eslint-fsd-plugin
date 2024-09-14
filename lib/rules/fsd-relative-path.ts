@@ -4,8 +4,9 @@ import path from "path";
 import {
   getAbsoluteImportPathElems,
   getFilenameElems,
-  getFilenamePattern,
+  getPattern,
   isAbsolute,
+  isLayer,
   normalizePath,
 } from "./helpers";
 import { ProjectStructureSchema } from "../../types";
@@ -22,6 +23,7 @@ const createRule = ESLintUtils.RuleCreator(
 export const fsdRelativePath = createRule<SchemaOptions[], MessageIds>({
   name: "fsd-relative-path",
   meta: {
+    fixable: "code",
     docs: {
       description: "Imports within one slice should be relative",
     },
@@ -55,23 +57,30 @@ export const fsdRelativePath = createRule<SchemaOptions[], MessageIds>({
           return;
         }
 
-        if (
-          isRelativePath &&
-          checker.shouldBeAbsolute({ filename, importPath })
-        ) {
+        const { requiredPath: requiredAbsolutePath, shouldBeAbsolute } =
+          checker.shouldBeAbsolute({
+            filename,
+            importPath,
+          });
+        if (isRelativePath && shouldBeAbsolute) {
           return context.report({
             node,
             messageId: MessageIds.ISSUE_SHOULD_BE_ABSOLUTE,
+            fix: (fixer) => {
+              return fixer.replaceText(node.source, requiredAbsolutePath ?? "");
+            },
           });
         }
 
-        if (
-          isAbsolutePath &&
-          checker.shouldBeRelative({ filename, importPath })
-        ) {
+        const { requiredPath: requiredRelativePath, shouldBeRelative } =
+          checker.shouldBeRelative({ filename, importPath });
+        if (isAbsolutePath && shouldBeRelative) {
           return context.report({
             node,
             messageId: MessageIds.ISSUE_SHOULD_BE_RELATIVE,
+            fix: (fixer) => {
+              return fixer.replaceText(node.source, requiredRelativePath ?? "");
+            },
           });
         }
       },
@@ -102,36 +111,69 @@ class RelativePathChecker {
     );
   }
 
-  shouldBeAbsolute({ filename, importPath }: Params): boolean {
+  shouldBeAbsolute({ filename, importPath }: Params): {
+    shouldBeAbsolute: boolean;
+    requiredPath?: string;
+  } {
     if (!importPath.startsWith("../")) {
-      return false;
+      return { shouldBeAbsolute: false };
     }
 
     const importPathElems = this.getRelativeImportPathElems({
       importPath,
       filename,
     });
-    const filenameElems = getFilenameElems({ filename });
-    const pattern = getFilenamePattern({
-      filenameElems,
+    const importPathPattern = getPattern({
+      elems: importPathElems,
       projectStructure: this.projectStructure,
     });
+
+    const filenameElems = getFilenameElems({ filename });
+    const filenamePattern = getPattern({
+      elems: filenameElems,
+      projectStructure: this.projectStructure,
+    });
+
     const isTheSamePattern = this.checkPattern({
-      pattern,
+      pattern: filenamePattern,
       importPathElems,
       filenameElems,
     });
-    return !isTheSamePattern;
+
+    if (isTheSamePattern) {
+      return { shouldBeAbsolute: false };
+    }
+
+    return {
+      shouldBeAbsolute: true,
+      requiredPath: this.getRequiredAbsolutePath({
+        importPathPattern,
+        importPathElems,
+      }),
+    };
   }
 
-  shouldBeRelative({ filename, importPath }: Params): boolean {
+  getRequiredAbsolutePath({
+    importPathElems,
+    importPathPattern,
+  }: {
+    importPathPattern: string[];
+    importPathElems: string[];
+  }) {
+    return `'${this.alias + importPathElems.slice(0, importPathPattern.length).join("/")}'`;
+  }
+
+  shouldBeRelative({ filename, importPath }: Params): {
+    shouldBeRelative: boolean;
+    requiredPath?: string;
+  } {
     const importPathElems = getAbsoluteImportPathElems({
       importPath,
       alias: this.alias,
     });
     const filenameElems = getFilenameElems({ filename });
-    const pattern = getFilenamePattern({
-      filenameElems,
+    const pattern = getPattern({
+      elems: filenameElems,
       projectStructure: this.projectStructure,
     });
     const isTheSamePattern = this.checkPattern({
@@ -139,7 +181,37 @@ class RelativePathChecker {
       importPathElems,
       filenameElems,
     });
-    return isTheSamePattern;
+
+    if (!isTheSamePattern) {
+      return {
+        shouldBeRelative: false,
+      };
+    }
+    return {
+      shouldBeRelative: true,
+      requiredPath: this.getRequiredRelativePath({
+        importPathElems,
+        filenameElems,
+      }),
+    };
+  }
+
+  getRequiredRelativePath({
+    importPathElems,
+    filenameElems,
+  }: {
+    filenameElems: string[];
+    importPathElems: string[];
+  }) {
+    let result = path.relative(
+      path.dirname(path.join(...filenameElems)),
+      path.join(...importPathElems),
+    );
+
+    if (!result.startsWith("..")) {
+      return `'./${result}'`;
+    }
+    return `'${result}'`;
   }
 
   private checkPattern({

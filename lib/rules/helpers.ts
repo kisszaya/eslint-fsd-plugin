@@ -32,16 +32,16 @@ export function isAbsolute({
  * Get passed filename Pattern
  * @example filenameElems: ["pages", "page-name", "ui", "index.ts"] --> ["pages", "**"]
  */
-export function getFilenamePattern({
-  filenameElems,
+export function getPattern({
+  elems,
   projectStructure,
 }: {
-  filenameElems: string[];
+  elems: string[];
   projectStructure: ProjectStructureSchema;
 }): string[] {
   const pattern: string[] = [];
   let structure: any = projectStructure;
-  for (let elem of filenameElems) {
+  for (let elem of elems) {
     if (structure[elem]) {
       pattern.push(elem);
 
