@@ -40,6 +40,10 @@ export const layerImports = createRule<SchemaOptions[], MessageIds>({
         const importPath = node.source.value;
         const filename = context.physicalFilename;
 
+        if (!filename.includes('/src/') && !filename.includes('\\src\\')) {
+          return;
+        }
+
         const checker = new LayerImportsChecker(alias, projectStructure);
 
         const isAbsolutePath = isAbsolute({

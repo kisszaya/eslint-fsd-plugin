@@ -65,7 +65,7 @@ export function getPattern({
 
 export function getFilenameElems({ filename }: { filename: string }) {
   const normalizedFilename = normalizePath(filename);
-  return normalizedFilename.split(ALIAS_START_PATH)[1].split("/");
+  return normalizedFilename.split(ALIAS_START_PATH)[1]?.split("/") ?? [];
 }
 
 export function normalizePath(filename: string) {

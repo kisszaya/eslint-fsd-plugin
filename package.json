@@ -1,11 +1,14 @@
 {
   "name": "eslint-plugin-kisszaya-fsd-plugin",
-  "version": "0.0.15",
+  "version": "0.0.21",
   "description": "Plugin to format code by fsd principles",
   "keywords": [
     "eslint",
     "eslintplugin",
-    "eslint-plugin"
+    "eslint-plugin",
+    "fsd-plugin",
+    "fsd",
+    "feature-sliced-design"
   ],
   "author": "Sveta",
   "main": "./lib/index.js",

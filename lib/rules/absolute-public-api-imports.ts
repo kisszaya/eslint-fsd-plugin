@@ -37,6 +37,11 @@ export const fsdAbsolutePublicApiImports = createRule<
     return {
       ImportDeclaration(node) {
         const importPath = node.source.value;
+        const filename = context.physicalFilename;
+
+        if (!filename.includes('/src/') && !filename.includes('\\src\\')) {
+          return;
+        }
 
         const checker = new PublicApiImportsChecker(alias, projectStructure);
 

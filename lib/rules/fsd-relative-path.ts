@@ -44,6 +44,10 @@ export const fsdRelativePath = createRule<SchemaOptions[], MessageIds>({
         const filename = context.physicalFilename;
         const importPath = node.source.value;
 
+        if (!filename.includes('/src/') && !filename.includes('\\src\\')) {
+          return;
+        }
+
         const checker = new RelativePathChecker(alias, projectStructure);
 
         const isRelativePath = checker.isRelative(importPath);
