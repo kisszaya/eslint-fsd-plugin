@@ -1,10 +1,10 @@
 import { ESLintUtils } from "@typescript-eslint/utils";
-import { SCHEMA, SchemaOptions } from "./schema";
+import {ALIAS_START_PATH, SCHEMA, SchemaOptions} from "./schema";
 import {
   getAbsoluteImportPathElems,
   getFilenameElems,
   isAbsolute,
-  isLayer,
+  isLayer, normalizePath,
 } from "./helpers";
 import { ProjectStructureSchema } from "../../types";
 
@@ -34,17 +34,19 @@ export const layerImports = createRule<SchemaOptions[], MessageIds>({
   create: (context) => {
     const alias = context.options[0].alias || "";
     const projectStructure = context.options[0].projectStructure;
+    const srcPath = context.options[0].srcPath || ALIAS_START_PATH;
 
     return {
       ImportDeclaration(node) {
         const importPath = node.source.value;
         const filename = context.physicalFilename;
+        const normalizedFilename = normalizePath(filename)
 
-        if (!filename.includes('/src/') && !filename.includes('\\src\\')) {
+        if (!normalizedFilename.includes(srcPath)) {
           return;
         }
 
-        const checker = new LayerImportsChecker(alias, projectStructure);
+        const checker = new LayerImportsChecker(alias, projectStructure, srcPath);
 
         const isAbsolutePath = isAbsolute({
           importPath,
@@ -70,9 +72,11 @@ export const layerImports = createRule<SchemaOptions[], MessageIds>({
 class LayerImportsChecker {
   private readonly alias: string;
   private readonly projectStructure: ProjectStructureSchema;
+  private readonly srcPath: string;
 
-  constructor(alias: string, projectStructure: ProjectStructureSchema) {
+  constructor(alias: string, projectStructure: ProjectStructureSchema, srcPath: string) {
     this.alias = alias;
+    this.srcPath = srcPath;
     this.projectStructure = projectStructure;
   }
 
@@ -87,7 +91,7 @@ class LayerImportsChecker {
       importPath,
       alias: this.alias,
     });
-    const filenameElems = getFilenameElems({ filename });
+    const filenameElems = getFilenameElems({ filename, srcPath: this.srcPath });
 
     const importPathLayer = importPathElems[0];
     const filenameLayer = filenameElems[0];

@@ -1,4 +1,3 @@
-import { ALIAS_START_PATH } from "./schema";
 import path from "path";
 import { ProjectStructureSchema } from "../../types";
 
@@ -63,9 +62,9 @@ export function getPattern({
   return pattern;
 }
 
-export function getFilenameElems({ filename }: { filename: string }) {
+export function getFilenameElems({ filename, srcPath }: { filename: string, srcPath: string }) {
   const normalizedFilename = normalizePath(filename);
-  return normalizedFilename.split(ALIAS_START_PATH)[1]?.split("/") ?? [];
+  return normalizedFilename.split(srcPath)[1]?.split("/") ?? [];
 }
 
 export function normalizePath(filename: string) {

@@ -4,8 +4,8 @@ import {
   MessageIds,
   fsdAbsolutePublicApiImports,
 } from "../../../lib/rules/absolute-public-api-imports";
-import { windowsPath } from "./helpers";
-import { BASE_ALIAS, BASE_OPTIONS } from "./const";
+import {unixPathWithLib, windowsPath} from "./helpers";
+import {BASE_ALIAS, BASE_OPTIONS, OPTIONS_WITH_LIB} from "./const";
 
 RuleTester.afterAll = () => {};
 
@@ -16,6 +16,11 @@ ruleTester.run("absolute-public-api-imports", fsdAbsolutePublicApiImports, {
     {
       code: `import Test from '${BASE_ALIAS}shared/ui/molecules'`,
       filename: windowsPath("app", "index.ts"),
+      options: BASE_OPTIONS,
+    },
+    {
+      code: `import Test from '${BASE_ALIAS}shared/ui/molecules/modal/index.ts'`,
+      filename: unixPathWithLib("app", "index.ts"),
       options: BASE_OPTIONS,
     },
   ],
@@ -41,6 +46,17 @@ ruleTester.run("absolute-public-api-imports", fsdAbsolutePublicApiImports, {
         },
       ],
       options: BASE_OPTIONS,
+    },
+    {
+      code: `import Test from '${BASE_ALIAS}shared/ui/molecules/modal/index.ts'`,
+      output: `import Test from '${BASE_ALIAS}shared/ui/molecules'`,
+      filename: unixPathWithLib("app", "index.ts"),
+      errors: [
+        {
+          messageId: MessageIds.ISSUE_ABSOLUTE_IMPORT_SHOULD_BE_FROM_PUBLIC_API,
+        },
+      ],
+      options: OPTIONS_WITH_LIB,
     },
   ],
 });

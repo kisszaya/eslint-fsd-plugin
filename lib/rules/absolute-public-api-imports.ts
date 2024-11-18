@@ -1,6 +1,6 @@
 import { ESLintUtils } from "@typescript-eslint/utils";
-import { SCHEMA, SchemaOptions } from "./schema";
-import { getAbsoluteImportPathElems, getPattern, isAbsolute } from "./helpers";
+import {ALIAS_START_PATH, SCHEMA, SchemaOptions} from "./schema";
+import {getAbsoluteImportPathElems, getPattern, isAbsolute, normalizePath} from "./helpers";
 import { ProjectStructureSchema } from "../../types";
 
 export enum MessageIds {
@@ -32,14 +32,16 @@ export const fsdAbsolutePublicApiImports = createRule<
   defaultOptions: [],
   create: (context) => {
     const alias = context.options[0].alias || "";
+    const srcPath = context.options[0].srcPath || ALIAS_START_PATH;
     const projectStructure = context.options[0].projectStructure;
 
     return {
       ImportDeclaration(node) {
         const importPath = node.source.value;
         const filename = context.physicalFilename;
+        const normalizedFilename = normalizePath(filename)
 
-        if (!filename.includes('/src/') && !filename.includes('\\src\\')) {
+        if (!normalizedFilename.includes(srcPath)) {
           return;
         }
 

@@ -31,20 +31,20 @@ Add `kisszaya-fsd-plugin` to the plugins section of your `.eslintrc` configurati
 
 Then configure the rules you want to use under the rules section.
 
-```json
+```
 {
     "rules": {
       "kisszaya-fsd-plugin/fsd-relative-path": [
         "error",
-        { alias: "@/", projectStructure: PROJECT_STRUCTURE },
+        { alias: "@/", projectStructure: PROJECT_STRUCTURE, "srcPath": "src/" },
       ],
       "kisszaya-fsd-plugin/absolute-public-api-imports": [
         "error",
-        { alias: "@/", projectStructure: PROJECT_STRUCTURE },
+        { alias: "@/", projectStructure: PROJECT_STRUCTURE, "srcPath": "src/" },
       ],
       "kisszaya-fsd-plugin/layer-imports": [
         "error",
-        { alias: "@/", projectStructure: PROJECT_STRUCTURE },
+        { alias: "@/", projectStructure: PROJECT_STRUCTURE, srcPath "src/" },
       ]
     }
 }
@@ -52,9 +52,11 @@ Then configure the rules you want to use under the rules section.
 
 
 
-## Configurations
+## Options
 
-Project structure configuration is required to understand where the index.ts files are located. 
+### projectStructure
+
+`projectStructure` configuration is required to understand where the index.ts files are located. 
 Absolute imports will only be used within these index.ts files.
 
 Example:
@@ -96,6 +98,18 @@ const PROJECT_STRUCTURE = {
     viewer: 1,
   },
 };
+```
+
+### srcPath
+`srcPath` defines the path to the `src` folder. Other folders will be ignored,
+Example 1:
+```
+srcPath: "src/"
+```
+
+Example 2 (for sveltekit):
+```
+srcPath: "lib/"
 ```
 
 ## Rules

@@ -5,6 +5,7 @@ export const ALIAS_START_PATH = "src/";
 
 export interface SchemaOptions {
   alias?: string;
+  srcPath?: string
   projectStructure: ProjectStructureSchema;
 }
 
@@ -13,6 +14,9 @@ export const SCHEMA: RuleMetaData<"", unknown>["schema"] = [
     type: "object",
     properties: {
       alias: {
+        type: "string",
+      },
+      srcPath: {
         type: "string",
       },
       projectStructure: {

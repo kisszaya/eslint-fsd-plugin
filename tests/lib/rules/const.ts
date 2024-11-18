@@ -1,4 +1,5 @@
 import { ProjectStructureSchema } from "../../../types";
+import { SchemaOptions } from "../../../lib/rules/schema";
 
 export const PROJECT_STRUCTURE: ProjectStructureSchema = {
   app: 1,
@@ -38,10 +39,19 @@ export const PROJECT_STRUCTURE: ProjectStructureSchema = {
   },
 };
 
-export const BASE_OPTIONS = [
+export const OPTIONS_WITH_LIB: SchemaOptions[] = [
   {
     alias: "@/",
     projectStructure: PROJECT_STRUCTURE,
+    srcPath: 'lib/',
+  },
+];
+
+export const BASE_OPTIONS: SchemaOptions[] = [
+  {
+    alias: "@/",
+    projectStructure: PROJECT_STRUCTURE,
+    srcPath: 'src/',
   },
 ];
 export const BASE_ALIAS = BASE_OPTIONS[0].alias;

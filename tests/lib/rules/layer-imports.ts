@@ -2,7 +2,7 @@ import { RuleTester } from "@typescript-eslint/rule-tester";
 
 import { MessageIds, layerImports } from "../../../lib/rules/layer-imports";
 import { windowsPath } from "./helpers";
-import { BASE_ALIAS, BASE_OPTIONS } from "./const";
+import {BASE_ALIAS, BASE_OPTIONS, OPTIONS_WITH_LIB} from "./const";
 
 RuleTester.afterAll = () => {};
 
@@ -19,6 +19,11 @@ ruleTester.run("layer-imports", layerImports, {
       code: `import Test from '${BASE_ALIAS}entities/entity-name'`,
       filename: windowsPath("entities", "another-entity-name", "index.ts"),
       options: BASE_OPTIONS,
+    },
+    {
+      code: `import Test from '${BASE_ALIAS}widgets/widget-name'`,
+      filename: windowsPath("features", "feature-name", "index.ts"),
+      options: OPTIONS_WITH_LIB,
     },
   ],
   invalid: [

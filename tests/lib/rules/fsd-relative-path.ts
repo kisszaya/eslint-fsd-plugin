@@ -4,8 +4,8 @@ import {
   fsdRelativePath,
   MessageIds,
 } from "../../../lib/rules/fsd-relative-path";
-import { unixPath, windowsPath } from "./helpers";
-import { BASE_ALIAS, BASE_OPTIONS } from "./const";
+import {unixPath, unixPathWithLib, windowsPath} from "./helpers";
+import {BASE_ALIAS, BASE_OPTIONS, OPTIONS_WITH_LIB} from "./const";
 
 RuleTester.afterAll = () => {};
 
@@ -70,8 +70,20 @@ ruleTester.run("fsd-relative-path", fsdRelativePath, {
       filename: unixPath("shared", "routing", "router.ts"),
       options: BASE_OPTIONS,
     },
+    {
+      code: "import Test from '../entities/entity-name/index.ts'",
+      filename: unixPathWithLib("app", "index.ts"),
+      options: BASE_OPTIONS,
+    },
   ],
   invalid: [
+    {
+      code: "import Test from '../entities/entity-name/index.ts'",
+      output: `import Test from '${BASE_ALIAS}entities/entity-name'`,
+      filename: unixPathWithLib("app", "index.ts"),
+      errors: [{ messageId: MessageIds.ISSUE_SHOULD_BE_ABSOLUTE }],
+      options: OPTIONS_WITH_LIB,
+    },
     {
       code: "import Test from '../entities/entity-name/index.ts'",
       output: `import Test from '${BASE_ALIAS}entities/entity-name'`,

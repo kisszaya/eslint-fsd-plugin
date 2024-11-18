@@ -37,18 +37,20 @@ export const fsdRelativePath = createRule<SchemaOptions[], MessageIds>({
   defaultOptions: [],
   create: (context) => {
     const alias = context.options[0].alias || "";
+    const srcPath = context.options[0].srcPath || ALIAS_START_PATH;
     const projectStructure = context.options[0].projectStructure;
 
     return {
       ImportDeclaration(node) {
         const filename = context.physicalFilename;
         const importPath = node.source.value;
+        const normalizedFilename = normalizePath(filename)
 
-        if (!filename.includes('/src/') && !filename.includes('\\src\\')) {
+        if (!normalizedFilename.includes(srcPath)) {
           return;
         }
 
-        const checker = new RelativePathChecker(alias, projectStructure);
+        const checker = new RelativePathChecker(alias, projectStructure, srcPath);
 
         const isRelativePath = checker.isRelative(importPath);
         const isAbsolutePath = isAbsolute({
@@ -99,10 +101,12 @@ type Params = {
 
 class RelativePathChecker {
   private readonly alias: string;
+  private readonly srcPath: string;
   private readonly projectStructure: ProjectStructureSchema;
 
-  constructor(alias: string, projectStructure: ProjectStructureSchema) {
+  constructor(alias: string, projectStructure: ProjectStructureSchema, srcPath: string ) {
     this.alias = alias;
+    this.srcPath = srcPath;
     this.projectStructure = projectStructure;
   }
 
@@ -132,7 +136,7 @@ class RelativePathChecker {
       projectStructure: this.projectStructure,
     });
 
-    const filenameElems = getFilenameElems({ filename });
+    const filenameElems = getFilenameElems({ filename, srcPath: this.srcPath });
     const filenamePattern = getPattern({
       elems: filenameElems,
       projectStructure: this.projectStructure,
@@ -175,7 +179,7 @@ class RelativePathChecker {
       importPath,
       alias: this.alias,
     });
-    const filenameElems = getFilenameElems({ filename });
+    const filenameElems = getFilenameElems({ filename, srcPath: this.srcPath });
     const pattern = getPattern({
       elems: filenameElems,
       projectStructure: this.projectStructure,
@@ -254,6 +258,6 @@ class RelativePathChecker {
           path.win32.resolve(path.win32.dirname(filename), importPath),
         );
 
-    return normalizedImportPath.split(ALIAS_START_PATH)[1].split("/");
+    return normalizedImportPath.split(this.srcPath)[1].split("/");
   }
 }
