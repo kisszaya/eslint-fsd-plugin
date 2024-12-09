@@ -25,6 +25,11 @@ ruleTester.run("layer-imports", layerImports, {
       filename: windowsPath("features", "feature-name", "index.ts"),
       options: OPTIONS_WITH_LIB,
     },
+    {
+      code: `import Test from '${BASE_ALIAS}shared/ui/atoms/tooltip'`,
+      filename: windowsPath("shared", "ui", "atoms", "tooltip-next"),
+      options: OPTIONS_WITH_LIB,
+    },
   ],
   invalid: [
     {

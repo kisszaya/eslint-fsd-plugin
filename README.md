@@ -109,7 +109,7 @@ srcPath: "src/"
 
 Example 2 (for sveltekit):
 ```
-srcPath: "lib/"
+srcPath: "src/lib/"
 ```
 
 ## Rules
